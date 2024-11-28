@@ -1,0 +1,84 @@
+# !!! MAIN SETTINGS !!!
+BOT_TOKEN: YOUR_BOT_TOKEN # Go to the @BotFather bot on Telegram and create your bot.
+BOT_NAME: TelegramSRV # Replace with your own (optional). Default: TelegramSRV
+ADMINS: [] # Administrators. Example: ["123456789", "987654321"]. They have console access by default.
+
+fromMinecraftToTelegram: true # From Telegram to Minecraft
+fromTelegramToMinecraft: true # From Minecraft to Telegram
+
+# Send messages to the chat when the server starts or stops
+SERVER_STATUS: true
+SERVER_STATUS_CHAT_ID: YOUR_CHAT_ID # Replace with your own
+SERVER_STATUS_THREAD_ID: YOUR_THREAD_ID # Replace with your own IF YOU ARE USING "Topics" IN TELEGRAM. If not, ignore this setting.
+# You can get the THREAD ID by using the /thread command in Telegram.
+
+# Send messages to the chat when a player event occurs (Chat, join, leave, achievements, death)
+PLAYER_STATUS: true
+PLAYER_STATUS_CHAT_ID: YOUR_CHAT_ID # Replace with your own
+PLAYER_STATUS_THREAD_ID: YOUR_THREAD_ID # Replace with your own IF YOU ARE USING "Topics" IN TELEGRAM. If not, ignore this setting.
+# You can get the THREAD ID by using the /thread command in Telegram.
+
+# Telegram bot commands
+commands:
+  start:
+    ENABLED: true
+    DESCRIPTION: "Start the bot; simply displays the developer's info"
+    USAGE: "/start"
+    FOR_ADMINS: false
+  info:
+    ENABLED: true
+    DESCRIPTION: "Server information, including TPS and player count"
+    USAGE: "/info"
+    FOR_ADMINS: false
+  language:
+    ENABLED: true
+    DESCRIPTION: "Change language. To see available languages, go to the lang folder. Enter the filename without .yml extension"
+    USAGE: "/language en, /language ru"
+    FOR_ADMINS: true
+  thread:
+    ENABLED: true
+    DESCRIPTION: "Get the ID of the thread where you invoked the command. If you use 'set,' specify what you're adding it to"
+    USAGE: "/thread, /thread set player, /thread set server"
+    FOR_ADMINS: true
+  help:
+    ENABLED: true
+    DESCRIPTION: "Get information on Telegram bot commands"
+    USAGE: "/help"
+    FOR_ADMINS: false
+  reload:
+    ENABLED: true
+    DESCRIPTION: "Updates config"
+    USAGE: "/reload"
+    FOR_ADMINS: true
+
+# Localization
+text:
+  server:
+    start: "✅ Server started"
+    stop: "❌ Server stopped"
+  player:
+    sendMessage: "💬 <b>%playerName%</b>: %message%"
+    joinMessage: "😇 <b>%playerName%</b> joined"
+    leaveMessage: "😟 <b>%playerName%</b> left"
+    advancementDone: "🎉 <b>%playerName%</b> achieved %advancementName%"
+    death: "🪦 <b>%playerName%</b> %deathMessage%"
+  telegramCommands:
+    thread:
+      reply: "ℹ️ Thread ID: %threadId%"
+      set: "✅ New Thread ID for <b>%eventName%</b>: %threadId%"
+      setError: "❌ Please select the event to link the Thread ID to. Examples are available in: /help thread"
+      notFound: "❌ Thread ID not found"
+    info:
+      reply: "ℹ️ Server information:\nTPS: <b>%tps%</b>\nPlayer count: <b>%playersCount%</b>"
+    language:
+      replySuccessful: "✅ Language successfully changed to: <b>%language%</b>"
+      replyFailed: "❌ Please specify the language. Example: /language en (You can find language codes in the lang folder)"
+    reload:
+      reply: "✅ Config reloaded"
+  minecraft:
+    player:
+      messageEnablePrefix: true
+      messagePrefix: "[Telegram]"
+      messageShowReplyInPrefix: true
+      messageAddUnderlineIfHaveAReplyInPrefix: true
+      message: "%playerName%: %message%"

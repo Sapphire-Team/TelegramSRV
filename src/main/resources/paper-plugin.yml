@@ -1,0 +1,15 @@
+name: TelegramSRV
+version: "${version}"
+main: net.weever.telegramSRV.TelegramSRV
+api-version: '1.21'
+
+commands:
+  tglanguage:
+    description: Change language
+    usage: /tglanguage
+    permission: telegramSRV.admin
+
+permissions:
+  telegramSRV.admin:
+    description: parent permission for all commands for admins
+    default: op
