@@ -52,12 +52,18 @@ jobs:
           draft: false
           prerelease: false
 
+      - name: Find JAR file
+        id: find_jar
+        run: |
+          JAR_FILE=$(find build/libs -name "*.jar" -print -quit)
+          echo "::set-output name=jar_path::$JAR_FILE"
+
       - name: Upload JAR to Release
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: build/libs/*
+          asset_path: ${{ steps.find_jar.outputs.jar_path }}
           asset_name: TelegramSRV-${{ steps.date.outputs.date }}.jar
           asset_content_type: application/java-archive
