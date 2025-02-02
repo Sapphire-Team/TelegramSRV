@@ -49,11 +49,12 @@ jobs:
 
       - name: Create Release
         id: create_release
-        uses: ncipollo/release-action@v1
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          tag: latest-${{ steps.get_mc_version.outputs.branch }}
-          name: TelegramSRV ${{ steps.get_mc_version.outputs.branch }} | Latest Build
+          tag_name: latest-1.21
+          release_name: TelegramSRV 1.21 | Latest Build
           draft: false
           prerelease: false
 
@@ -70,5 +71,5 @@ jobs:
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ${{ steps.find_jar.outputs.jar_path }}
-          asset_name: TelegramSRV-${{ steps.get_mc_version.outputs.branch }}-${{ steps.get_version.outputs.version }}.jar
+          asset_name: TelegramSRV-${{ steps.get_version.outputs.mc_version }}-${{ steps.get_version.outputs.version }}.jar
           asset_content_type: application/java-archive
