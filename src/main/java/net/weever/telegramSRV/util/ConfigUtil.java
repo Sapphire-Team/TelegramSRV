@@ -11,41 +11,49 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static net.weever.telegramSRV.TelegramSRV.config;
 
 public class ConfigUtil {
     @Getter
     private static final Set<String> loadedLanguages = new HashSet<>(Arrays.asList("en", "ru"));
-    private static final String LANG_DIR = String.valueOf(TelegramSRV.plugin().getDataFolder());
+    private static final String LANG_DIR = TelegramSRV.plugin().getDataFolder() + "/lang";
     private static final String CONFIG_FILE = TelegramSRV.plugin().getDataFolder() + "/config.yml";
     private static final String OLD_CONFIG_FILE = TelegramSRV.plugin().getDataFolder() + "/config.old.yml";
 
     public static void copyDefaultTranslations() {
-        File translationsFolder = new File(LANG_DIR);
-        File langFolder = new File(translationsFolder, "lang");
+        File langFolder = new File(LANG_DIR);
         if (!langFolder.exists()) {
-            langFolder.mkdir();
+            langFolder.mkdirs();
         }
         for (String lang : loadedLanguages) {
-            String resourcePath = "lang/" + lang + ".yml";
-            InputStream inputStream = TelegramSRV.plugin().getResource(resourcePath);
-            if (inputStream != null) {
-                File translationFile = new File(langFolder, lang + ".yml");
-                try (FileOutputStream outputStream = new FileOutputStream(translationFile)) {
-                    byte[] buffer = new byte[1024];
-                    int bytesRead;
-                    while ((bytesRead = inputStream.read(buffer)) != -1) {
-                        outputStream.write(buffer, 0, bytesRead);
-                    }
-                    TelegramSRV.logger.info("Copied translation file: " + translationFile.getName());
-                } catch (IOException e) {
-                    TelegramSRV.logger.severe("Error copying translation file for language '" + lang + "': " + e.getMessage());
-                }
-            } else {
-                TelegramSRV.logger.warning("Translation file for language '" + lang + "' not found in resources.");
-            }
+            copyTranslationFile(lang, langFolder);
         }
+        copyDefaultConfigFile(langFolder);
+    }
+
+    private static void copyTranslationFile(String lang, File langFolder) {
+        String resourcePath = "lang/" + lang + ".yml";
+        InputStream inputStream = TelegramSRV.plugin().getResource(resourcePath);
+        if (inputStream != null) {
+            File translationFile = new File(langFolder, lang + ".yml");
+            try (FileOutputStream outputStream = new FileOutputStream(translationFile)) {
+                byte[] buffer = new byte[1024];
+                int bytesRead;
+                while ((bytesRead = inputStream.read(buffer)) != -1) {
+                    outputStream.write(buffer, 0, bytesRead);
+                }
+                TelegramSRV.logger.info("Copied translation file: " + translationFile.getName());
+            } catch (IOException e) {
+                TelegramSRV.logger.severe("Error copying translation file for language '" + lang + "': " + e.getMessage());
+            }
+        } else {
+            TelegramSRV.logger.warning("Translation file for language '" + lang + "' not found in resources.");
+        }
+    }
+
+    private static void copyDefaultConfigFile(File langFolder) {
         File destFile = new File(CONFIG_FILE);
         if (!destFile.exists() || config().getKeys(false).isEmpty()) {
             try {
@@ -57,9 +65,8 @@ public class ConfigUtil {
         }
     }
 
-
     public static void changeLanguage(String language, boolean trying) {
-        File sourceFile = new File(LANG_DIR + "/lang/" + language + ".yml");
+        File sourceFile = new File(LANG_DIR + "/" + language + ".yml");
         File destFile = new File(CONFIG_FILE);
         File backupFile = new File(OLD_CONFIG_FILE);
 
@@ -67,43 +74,58 @@ public class ConfigUtil {
             try {
                 FileUtils.copyFile(destFile, backupFile);
                 TelegramSRV.logger.info("Backup created: " + backupFile.getName());
-
-                Map<String, String> settingsMap = new HashMap<>(Map.of(
-                        "BOT_TOKEN", config().getString("BOT_TOKEN"),
-                        "BOT_NAME", config().getString("BOT_NAME"),
-                        "ADMINS", config().getString("ADMINS"),
-                        "SERVER_STATUS_CHAT_ID", config().getString("SERVER_STATUS_CHAT_ID"),
-                        "SERVER_STATUS_THREAD_ID", config().getString("SERVER_STATUS_THREAD_ID"),
-                        "PLAYER_STATUS_CHAT_ID", config().getString("PLAYER_STATUS_CHAT_ID"),
-                        "PLAYER_STATUS_THREAD_ID", config().getString("PLAYER_STATUS_THREAD_ID")
-//                        "CONSOLE_CHAT_ID", config().getString("CONSOLE_CHAT_ID"),
-//                        "CONSOLE_STATUS_THREAD_ID", config().getString("CONSOLE_STATUS_THREAD_ID")
-                ));
-
-                List<String> langLines = FileUtils.readLines(sourceFile, StandardCharsets.UTF_8);
-                FileUtils.writeLines(destFile, langLines);
-
-                List<String> configLines = FileUtils.readLines(destFile, StandardCharsets.UTF_8);
-                for (int i = 0; i < configLines.size(); i++) {
-                    for (Map.Entry<String, String> entry : settingsMap.entrySet()) {
-                        if (configLines.get(i).startsWith(entry.getKey()) && !configLines.get(i).contains(entry.getValue())) {
-                            configLines.set(i, entry.getKey() + ": " + entry.getValue());
-                        }
-                    }
-                }
-                FileUtils.writeLines(destFile, configLines);
+                updateConfigFileWithLanguage(language, destFile);
                 TelegramSRV.plugin().reloadConfig();
                 TelegramSRV.logger.info("Language changed to: " + language.toUpperCase());
             } catch (IOException e) {
                 TelegramSRV.logger.severe("Problem with changing language: " + e.getMessage());
             }
         } else {
-            TelegramSRV.logger.warning(String.format("Language file not found: %s.yml", language));
-            if (trying) return;
-            TelegramSRV.logger.warning("Retrying...");
-            copyDefaultTranslations();
-            changeLanguage(language, true);
+            handleMissingLanguageFile(language, trying);
         }
+    }
+
+    private static void handleMissingLanguageFile(String language, boolean trying) {
+        TelegramSRV.logger.warning(String.format("Language file not found: %s.yml", language));
+        if (trying) return;
+        TelegramSRV.logger.warning("Retrying...");
+        copyDefaultTranslations();
+        changeLanguage(language, true);
+    }
+
+    private static void updateConfigFileWithLanguage(String language, File destFile) throws IOException {
+        Map<String, String> settingsMap = getSettingsMap();
+        List<String> langLines = FileUtils.readLines(new File(LANG_DIR + "/" + language + ".yml"), StandardCharsets.UTF_8);
+        FileUtils.writeLines(destFile, langLines);
+
+        List<String> configLines = FileUtils.readLines(destFile, StandardCharsets.UTF_8);
+        List<String> updatedConfigLines = updateConfigLinesWithSettings(configLines, settingsMap);
+        FileUtils.writeLines(destFile, updatedConfigLines);
+    }
+
+    private static List<String> updateConfigLinesWithSettings(List<String> configLines, Map<String, String> settingsMap) {
+        return configLines.stream()
+                .map(line -> {
+                    for (Map.Entry<String, String> entry : settingsMap.entrySet()) {
+                        if (line.startsWith(entry.getKey()) && !line.contains(entry.getValue())) {
+                            return entry.getKey() + ": " + entry.getValue();
+                        }
+                    }
+                    return line;
+                })
+                .collect(Collectors.toList());
+    }
+
+    private static Map<String, String> getSettingsMap() {
+        return new HashMap<>(Map.of(
+                "BOT_TOKEN", Objects.requireNonNull(config().getString("BOT_TOKEN")),
+                "BOT_NAME", Objects.requireNonNull(config().getString("BOT_NAME")),
+                "ADMINS", Objects.requireNonNull(config().getString("ADMINS")),
+                "SERVER_STATUS_CHAT_ID", Objects.requireNonNull(config().getString("SERVER_STATUS_CHAT_ID")),
+                "SERVER_STATUS_THREAD_ID", Objects.requireNonNull(config().getString("SERVER_STATUS_THREAD_ID")),
+                "PLAYER_STATUS_CHAT_ID", Objects.requireNonNull(config().getString("PLAYER_STATUS_CHAT_ID")),
+                "PLAYER_STATUS_THREAD_ID", Objects.requireNonNull(config().getString("PLAYER_STATUS_THREAD_ID"))
+        ));
     }
 
     public static void changeLanguage(String language) {

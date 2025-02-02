@@ -10,7 +10,6 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
-
 import java.util.Objects;
 
 public class ChatEvent implements ITelegramEvent {
@@ -49,7 +48,6 @@ public class ChatEvent implements ITelegramEvent {
             }
             component.addExtra(messageComponent);
 
-
             for (Player player : Bukkit.getOnlinePlayers()) {
                 player.spigot().sendMessage(component);
             }
@@ -79,6 +77,6 @@ public class ChatEvent implements ITelegramEvent {
             String lastName = message.getFrom().getLastName();
             username = (firstName != null ? firstName : "") + (lastName != null ? " " + lastName : "");
         }
-        return (username != null ? "@" + username : "Unknown");
+        return username != null ? "@" + username : "Unknown";
     }
 }

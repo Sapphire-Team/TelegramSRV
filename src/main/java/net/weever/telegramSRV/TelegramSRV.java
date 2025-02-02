@@ -11,6 +11,8 @@ import org.telegram.telegrambots.meta.TelegramBotsApi;
 import org.telegram.telegrambots.meta.generics.BotSession;
 import org.telegram.telegrambots.updatesreceivers.DefaultBotSession;
 
+import java.util.Objects;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public final class TelegramSRV extends JavaPlugin {
@@ -33,22 +35,35 @@ public final class TelegramSRV extends JavaPlugin {
             TelegramBotsApi botsApi = new TelegramBotsApi(DefaultBotSession.class);
             botSession = botsApi.registerBot(telegramBot);
             logger.info("Telegram SRV is started: " + telegramBot.getBotUsername());
-            ConfigUtil.EventValue eventValue = ConfigUtil.getEventConfigValue(ConfigUtil.Events.SERVER);
-            if (eventValue.isEnabled() && !eventValue.isNullChatId()) {
-                String threadId = null;
-                if (!eventValue.isNullThreadId()) {
-                    threadId = eventValue.getThreadId();
-                }
-                telegramBot.sendMessage(ConfigUtil.getLocalizedText(ConfigUtil.Events.SERVER, "start"), eventValue.getChatId(), threadId, null);
-            }
+            sendServerStatusMessage("start");
             return true;
         } catch (Exception e) {
-            logger.severe("Failed to start Telegram bot: " + e.getMessage());
-            Bukkit.getPluginManager().disablePlugin(plugin);
-            if (botSession != null) {
-                botSession.stop();
-            }
+            logger.log(Level.SEVERE, "Failed to start Telegram bot: " + e.getMessage(), e);
+            disablePlugin();
+            stopBotSession();
             return false;
+        }
+    }
+
+    private static void sendServerStatusMessage(String status){
+        ConfigUtil.EventValue eventValue = ConfigUtil.getEventConfigValue(ConfigUtil.Events.SERVER);
+        if (eventValue.isEnabled() && !eventValue.isNullChatId()) {
+            String threadId = eventValue.isNullThreadId() ? null : eventValue.getThreadId();
+            telegramBot.sendMessage(ConfigUtil.getLocalizedText(ConfigUtil.Events.SERVER, status), eventValue.getChatId(), threadId, null);
+        }
+    }
+
+    private static void disablePlugin() {
+        Bukkit.getPluginManager().disablePlugin(plugin);
+    }
+
+    private static void stopBotSession() {
+        if (botSession != null) {
+            try {
+                botSession.stop();
+            } catch (Exception e) {
+                logger.log(Level.SEVERE, "Failed to stop Telegram bot session: " + e.getMessage(), e);
+            }
         }
     }
 
@@ -60,39 +75,23 @@ public final class TelegramSRV extends JavaPlugin {
             saveDefaultConfig();
             ConfigUtil.copyDefaultTranslations();
         } catch (Exception e) {
-            logger.severe("Failed to load plugin: " + e.getMessage());
-            Bukkit.getPluginManager().disablePlugin(this);
+            logger.log(Level.SEVERE, "Failed to load plugin: " + e.getMessage(), e);
+            disablePlugin();
             return;
         }
         if (startTelegramBot()) {
             Bukkit.getPluginManager().registerEvents(new PlayerEvent(), this);
-//            try {
-//                PluginCommand languageCommand = getCommand("tglanguage");
-//                languageCommand.setExecutor(new LanguageCommand());
-//                languageCommand.setTabCompleter(new LanguageTabCompletion());
-//            } catch (NullPointerException e) {
-//                logger.severe("Error with registering this command: " + e.getMessage());
-//                Arrays.stream(e.getStackTrace()).forEach(line -> logger.severe(line.toString()));
-//            }
         }
     }
-
     @Override
     public void onDisable() {
         try {
             if (botSession != null && botSession.isRunning()) {
-                ConfigUtil.EventValue eventValue = ConfigUtil.getEventConfigValue(ConfigUtil.Events.SERVER);
-                if (eventValue.isEnabled() && !eventValue.isNullChatId()) {
-                    String threadId = null;
-                    if (!eventValue.isNullThreadId()) {
-                        threadId = eventValue.getThreadId();
-                    }
-                    telegramBot.sendMessage(ConfigUtil.getLocalizedText(ConfigUtil.Events.SERVER, "stop"), eventValue.getChatId(), threadId, null);
-                }
+                sendServerStatusMessage("stop");
                 botSession.stop();
             }
         } catch (Exception e) {
-            logger.severe("Failed to send \"Disable\" message: " + e.getMessage());
+            logger.log(Level.SEVERE, "Failed to send \"Disable\" message: " + e.getMessage(), e);
         }
     }
 }

@@ -7,14 +7,22 @@ import net.weever.telegramSRV.api.modules.commands.TelegramCommandImpl.ReplyToCo
 public interface ITelegramCommand {
     default void onCommand(ReplyToCommand sender) {
         sender.reply("Command do not have a handler. Please implement it.");
-        TelegramCommandImpl.removeCommand(sender.commandName);
+        TelegramCommandImpl.removeCommand(sender.commandName());
     }
 
     default boolean perform(String commandName, long userId) {
-        boolean commandEnabled = TelegramSRV.config().getBoolean("commands." + commandName + ".ENABLED");
-        boolean adminOnly = TelegramSRV.config().getBoolean("commands." + commandName + ".FOR_ADMINS");
-        boolean isAdmin = TelegramSRV.config().getStringList("ADMINS").contains(String.valueOf(userId));
+        return isCommandEnabled(commandName) && (!isAdminOnly(commandName) || isAdmin(userId));
+    }
 
-        return commandEnabled && (!adminOnly || isAdmin);
+    private boolean isCommandEnabled(String commandName){
+        return TelegramSRV.config().getBoolean("commands." + commandName + ".ENABLED");
+    }
+
+    private boolean isAdminOnly(String commandName){
+        return TelegramSRV.config().getBoolean("commands." + commandName + ".FOR_ADMINS");
+    }
+
+    private boolean isAdmin(long userId){
+        return TelegramSRV.config().getStringList("ADMINS").contains(String.valueOf(userId));
     }
 }

@@ -12,6 +12,8 @@ import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
+import java.util.Arrays;
+
 public class TelegramBot extends TelegramLongPollingBot {
     public TelegramBot() {
         super(TelegramSRV.config().getString("BOT_TOKEN"));
@@ -31,7 +33,6 @@ public class TelegramBot extends TelegramLongPollingBot {
     private void registerEvents() {
         TelegramEventImpl.addEvent(new ChatEvent());
     }
-
     @Override
     public void onUpdateReceived(Update update) {
         if (update.hasMessage() && update.getMessage().hasText() && update.getMessage().getText().startsWith("/")) {
@@ -47,12 +48,11 @@ public class TelegramBot extends TelegramLongPollingBot {
         String commandText = args[0].substring(1);
 
         TelegramCommandImpl.getCommands().forEach((commandName, command) -> {
-            if (commandText.equals(commandName) && command.perform(commandName, userId)) {
-                command.onCommand(new TelegramCommandImpl.ReplyToCommand(commandName, this, message, args));
+            if ((commandText.equals(commandName) || commandText.startsWith(commandName)) && command.perform(commandName, userId)) {
+                command.onCommand(new TelegramCommandImpl.ReplyToCommand(commandName, this, message, Arrays.copyOfRange(args, 1, args.length)));
             }
         });
     }
-
     @Override
     public String getBotUsername() {
         return TelegramSRV.getPlugin(TelegramSRV.class).getConfig().getString("BOT_NAME");

@@ -10,28 +10,27 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class LanguageCommand implements CommandExecutor {
+
+    private static final Pattern EMOJI_PATTERN = Pattern.compile("[\\p{So}\\p{Cn}\\p{Cs}]|[\\uD83C-\\uDBFF\\uDC00-\\uDFFF]+", Pattern.UNICODE_CASE);
+
     public static String removeEmojis(@NotNull String text) {
-        String emojiRegex = "[\\p{So}\\p{Cn}\\p{Cs}]|[\\uD83C-\\uDBFF\\uDC00-\\uDFFF]+";
-
-        Pattern emojiPattern = Pattern.compile(emojiRegex, Pattern.UNICODE_CASE);
-        Matcher matcher = emojiPattern.matcher(text);
-
+        Matcher matcher = EMOJI_PATTERN.matcher(text);
         return matcher.replaceAll("");
     }
 
     @Override
-    public boolean onCommand(@NotNull CommandSender commandSender, @NotNull Command command, @NotNull String s, @NotNull String[] args) {
-        if (commandSender.isOp()) {
-            if (args.length > 1) {
-                ConfigUtil.changeLanguage(args[1]);
-                String text = removeEmojis(ConfigUtil.getLocalizedText("telegramCommands", "language.replySuccessful")
-                        .replace("%language%", args[1]));
-                commandSender.sendMessage(text);
-            } else {
-                commandSender.sendMessage(removeEmojis(ConfigUtil.getLocalizedText("telegramCommands", "language.replyFailed")));
-            }
+    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
+        if (!sender.isOp()) return false;
+
+        if (args.length != 1) {
+            sender.sendMessage(removeEmojis(ConfigUtil.getLocalizedText("telegramCommands", "language.replyFailed")));
             return true;
         }
-        return false;
+
+        ConfigUtil.changeLanguage(args[0]);
+        String text = removeEmojis(ConfigUtil.getLocalizedText("telegramCommands", "language.replySuccessful")
+                .replace("%language%", args[0]));
+        sender.sendMessage(text);
+        return true;
     }
 }
