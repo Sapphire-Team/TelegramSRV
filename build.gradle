@@ -4,7 +4,7 @@ plugins {
 }
 
 group = 'net.weever'
-version = project.version.toString()
+version = project.mc_version.toString() + "-" + project.version.toString()
 println version
 
 
@@ -26,10 +26,10 @@ dependencies {
     testCompileOnly 'org.projectlombok:lombok:1.18.34'
     testAnnotationProcessor 'org.projectlombok:lombok:1.18.34'
     implementation 'org.telegram:telegrambots:6.9.7.1'
-    compileOnly("io.papermc.paper:paper-api:1.21.1-R0.1-SNAPSHOT")
+    compileOnly("io.papermc.paper:paper-api:1.20.1-R0.1-SNAPSHOT")
 }
 
-def targetJavaVersion = 21
+def targetJavaVersion = 17
 java {
     def javaVersion = JavaVersion.toVersion(targetJavaVersion)
     sourceCompatibility = javaVersion
