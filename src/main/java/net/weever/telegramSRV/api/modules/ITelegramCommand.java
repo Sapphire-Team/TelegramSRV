@@ -14,15 +14,15 @@ public interface ITelegramCommand {
         return isCommandEnabled(commandName) && (!isAdminOnly(commandName) || isAdmin(userId));
     }
 
-    private boolean isCommandEnabled(String commandName){
+    private boolean isCommandEnabled(String commandName) {
         return TelegramSRV.config().getBoolean("commands." + commandName + ".ENABLED");
     }
 
-    private boolean isAdminOnly(String commandName){
+    private boolean isAdminOnly(String commandName) {
         return TelegramSRV.config().getBoolean("commands." + commandName + ".FOR_ADMINS");
     }
 
-    private boolean isAdmin(long userId){
+    private boolean isAdmin(long userId) {
         return TelegramSRV.config().getStringList("ADMINS").contains(String.valueOf(userId));
     }
 }

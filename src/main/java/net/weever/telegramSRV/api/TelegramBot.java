@@ -33,6 +33,7 @@ public class TelegramBot extends TelegramLongPollingBot {
     private void registerEvents() {
         TelegramEventImpl.addEvent(new ChatEvent());
     }
+
     @Override
     public void onUpdateReceived(Update update) {
         if (update.hasMessage() && update.getMessage().hasText() && update.getMessage().getText().startsWith("/")) {
@@ -53,6 +54,7 @@ public class TelegramBot extends TelegramLongPollingBot {
             }
         });
     }
+
     @Override
     public String getBotUsername() {
         return TelegramSRV.getPlugin(TelegramSRV.class).getConfig().getString("BOT_NAME");

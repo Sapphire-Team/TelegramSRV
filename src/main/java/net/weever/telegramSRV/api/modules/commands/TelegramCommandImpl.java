@@ -23,11 +23,11 @@ public class TelegramCommandImpl implements ITelegramCommand {
     public record ReplyToCommand(String commandName, TelegramBot bot, Message message, String[] args) {
 
         public void send(String text) {
-                bot.sendMessage(text, message.getChatId().toString(), null, null);
-            }
-
-            public void reply(String text) {
-                bot.replyMessage(text, message.getChatId().toString(), message.getMessageId());
-            }
+            bot.sendMessage(text, message.getChatId().toString(), null, null);
         }
+
+        public void reply(String text) {
+            bot.replyMessage(text, message.getChatId().toString(), message.getMessageId());
+        }
+    }
 }

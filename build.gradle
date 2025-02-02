@@ -4,7 +4,7 @@ plugins {
 }
 
 group = 'net.weever'
-version = project.version.toString()
+version = project.mc_version.toString() + "-" + project.version.toString()
 println version
 
 

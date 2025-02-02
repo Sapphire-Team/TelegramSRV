@@ -11,7 +11,6 @@ import org.telegram.telegrambots.meta.TelegramBotsApi;
 import org.telegram.telegrambots.meta.generics.BotSession;
 import org.telegram.telegrambots.updatesreceivers.DefaultBotSession;
 
-import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -45,7 +44,7 @@ public final class TelegramSRV extends JavaPlugin {
         }
     }
 
-    private static void sendServerStatusMessage(String status){
+    private static void sendServerStatusMessage(String status) {
         ConfigUtil.EventValue eventValue = ConfigUtil.getEventConfigValue(ConfigUtil.Events.SERVER);
         if (eventValue.isEnabled() && !eventValue.isNullChatId()) {
             String threadId = eventValue.isNullThreadId() ? null : eventValue.getThreadId();
@@ -83,6 +82,7 @@ public final class TelegramSRV extends JavaPlugin {
             Bukkit.getPluginManager().registerEvents(new PlayerEvent(), this);
         }
     }
+
     @Override
     public void onDisable() {
         try {
