@@ -5,7 +5,6 @@ plugins {
 
 group = 'net.weever'
 version = project.version.toString()
-a
 println version
 
 
