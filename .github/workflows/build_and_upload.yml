@@ -53,8 +53,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: latest-1.21
-          release_name: TelegramSRV 1.21 | Latest Build
+          tag_name: latest-${{ steps.get_version.outputs.mc_version }}
+          release_name: TelegramSRV ${{ steps.get_version.outputs.mc_version }} | Latest Build
           draft: false
           prerelease: false
 
