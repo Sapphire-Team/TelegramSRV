@@ -5,7 +5,9 @@ plugins {
 
 group = 'net.weever'
 version = project.version.toString()
+a
 println version
+
 
 repositories {
     mavenCentral()
@@ -36,6 +38,10 @@ java {
     if (JavaVersion.current() < javaVersion) {
         toolchain.languageVersion = JavaLanguageVersion.of(targetJavaVersion)
     }
+}
+
+jar {
+    archiveBaseName = "TelegramSRV"
 }
 
 tasks.withType(JavaCompile).configureEach {
