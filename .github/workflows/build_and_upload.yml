@@ -27,7 +27,7 @@ jobs:
         run: chmod +x gradlew
 
       - name: Build with Gradle
-        run: ./gradlew build
+        run: ./gradlew buildShadow
 
       - name: List files in build
         run: ls -la build
