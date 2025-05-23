@@ -1,6 +1,7 @@
 plugins {
     id("com.github.johnrengelman.shadow") version "8.1.1"
     id 'java'
+    id("xyz.jpenilla.run-paper") version "2.3.1"
 }
 
 group = 'net.weever'
@@ -26,7 +27,13 @@ dependencies {
     testCompileOnly 'org.projectlombok:lombok:1.18.34'
     testAnnotationProcessor 'org.projectlombok:lombok:1.18.34'
     implementation 'org.telegram:telegrambots:6.9.7.1'
-    compileOnly("io.papermc.paper:paper-api:1.21.1-R0.1-SNAPSHOT")
+    compileOnly("io.papermc.paper:paper-api:1.21.4-R0.1-SNAPSHOT")
+}
+
+tasks {
+    runServer {
+        minecraftVersion("1.21.4")
+    }
 }
 
 def targetJavaVersion = 21

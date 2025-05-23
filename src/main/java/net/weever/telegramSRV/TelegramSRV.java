@@ -1,6 +1,8 @@
 package net.weever.telegramSRV;
 
+import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents;
 import net.weever.telegramSRV.api.TelegramBot;
+import net.weever.telegramSRV.commands.LanguageCommand;
 import net.weever.telegramSRV.events.PlayerEvent;
 import net.weever.telegramSRV.util.ConfigUtil;
 import org.bukkit.Bukkit;
@@ -11,32 +13,39 @@ import org.telegram.telegrambots.meta.TelegramBotsApi;
 import org.telegram.telegrambots.meta.generics.BotSession;
 import org.telegram.telegrambots.updatesreceivers.DefaultBotSession;
 
+import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public final class TelegramSRV extends JavaPlugin {
+public final class TelegramSRV extends JavaPlugin
+{
     public static TelegramBot telegramBot;
     public static Logger logger;
     private static BotSession botSession;
     private static Plugin plugin;
 
-    public static FileConfiguration config() {
+    public static FileConfiguration config()
+    {
         return plugin.getConfig();
     }
 
-    public static TelegramSRV plugin() {
+    public static TelegramSRV plugin()
+    {
         return TelegramSRV.getPlugin(TelegramSRV.class);
     }
 
-    public static boolean startTelegramBot() {
-        try {
+    public static boolean startTelegramBot()
+    {
+        try
+        {
             telegramBot = new TelegramBot();
             TelegramBotsApi botsApi = new TelegramBotsApi(DefaultBotSession.class);
             botSession = botsApi.registerBot(telegramBot);
             logger.info("Telegram SRV is started: " + telegramBot.getBotUsername());
             sendServerStatusMessage("start");
             return true;
-        } catch (Exception e) {
+        } catch (Exception e)
+        {
             logger.log(Level.SEVERE, "Failed to start Telegram bot: " + e.getMessage(), e);
             disablePlugin();
             stopBotSession();
@@ -44,53 +53,78 @@ public final class TelegramSRV extends JavaPlugin {
         }
     }
 
-    private static void sendServerStatusMessage(String status) {
+    private static void sendServerStatusMessage(String status)
+    {
         ConfigUtil.EventValue eventValue = ConfigUtil.getEventConfigValue(ConfigUtil.Events.SERVER);
-        if (eventValue.isEnabled() && !eventValue.isNullChatId()) {
-            String threadId = eventValue.isNullThreadId() ? null : eventValue.getThreadId();
-            telegramBot.sendMessage(ConfigUtil.getLocalizedText(ConfigUtil.Events.SERVER, status), eventValue.getChatId(), threadId, null);
+        if (eventValue.enabled() && !eventValue.isNullChatId())
+        {
+            String threadId = eventValue.isNullThreadId() ? null : eventValue.threadId();
+            telegramBot.sendMessage(ConfigUtil.getLocalizedText(ConfigUtil.Events.SERVER, status), eventValue.chatId(), threadId, null);
         }
     }
 
-    private static void disablePlugin() {
+    private static void disablePlugin()
+    {
         Bukkit.getPluginManager().disablePlugin(plugin);
     }
 
-    private static void stopBotSession() {
-        if (botSession != null) {
-            try {
+    private static void stopBotSession()
+    {
+        if (botSession != null)
+        {
+            try
+            {
                 botSession.stop();
-            } catch (Exception e) {
+            } catch (Exception e)
+            {
                 logger.log(Level.SEVERE, "Failed to stop Telegram bot session: " + e.getMessage(), e);
             }
         }
     }
 
     @Override
-    public void onEnable() {
+    public void onEnable()
+    {
         plugin = this;
         logger = getLogger();
-        try {
+        try
+        {
             saveDefaultConfig();
             ConfigUtil.copyDefaultTranslations();
-        } catch (Exception e) {
+        } catch (Exception e)
+        {
             logger.log(Level.SEVERE, "Failed to load plugin: " + e.getMessage(), e);
             disablePlugin();
             return;
         }
-        if (startTelegramBot()) {
+        if (startTelegramBot())
+        {
             Bukkit.getPluginManager().registerEvents(new PlayerEvent(), this);
+            try
+            {
+                this.getLifecycleManager().registerEventHandler(LifecycleEvents.COMMANDS, event -> event.registrar().register("tglanguage", new LanguageCommand()));
+                //                PluginCommand languageCommand = getCommand("tglanguage");
+                //                languageCommand.setTabCompleter(new LanguageTabCompletion());
+            } catch (NullPointerException e)
+            {
+                logger.severe("Error with registering this command: " + e.getMessage());
+                Arrays.stream(e.getStackTrace()).forEach(line -> logger.severe(line.toString()));
+            }
         }
     }
 
     @Override
-    public void onDisable() {
-        try {
-            if (botSession != null && botSession.isRunning()) {
+    public void onDisable()
+    {
+        try
+        {
+            if (botSession != null && botSession.isRunning())
+            {
                 sendServerStatusMessage("stop");
                 botSession.stop();
             }
-        } catch (Exception e) {
+        } catch (Exception e)
+        {
             logger.log(Level.SEVERE, "Failed to send \"Disable\" message: " + e.getMessage(), e);
         }
     }

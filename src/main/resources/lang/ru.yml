@@ -62,7 +62,7 @@ text:
     joinMessage: "😇 <b>%playerName%</b> присоединился"
     leaveMessage: "😟 <b>%playerName%</b> отключился"
     advancementDone: "🎉 <b>%playerName%</b> получил(а) достижение %advancementName%"
-    death: "🪦 <b>%playerName%</b> %deathMessage%"
+    death: "🪦 <b>%deathMessage%</b>"
   telegramCommands:
     thread:
       reply: "ℹ️ Thread ID: %threadId%"

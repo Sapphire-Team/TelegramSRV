@@ -14,77 +14,115 @@ import org.bukkit.event.player.PlayerAdvancementDoneEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 
-public class PlayerEvent implements Listener {
-    private static void sendMessageToTelegram(String text, ConfigUtil.EventValue eventValue) {
-        if (eventValue.isEnabled() && !eventValue.isNullChatId()) {
-            String threadId = eventValue.isNullThreadId() ? null : eventValue.getThreadId();
-            TelegramSRV.telegramBot.sendMessage(text, eventValue.getChatId(), threadId, null);
+public class PlayerEvent implements Listener
+{
+    private static void sendMessageToTelegram(String text, ConfigUtil.EventValue eventValue)
+    {
+        if (eventValue.enabled() && !eventValue.isNullChatId())
+        {
+            String threadId = eventValue.isNullThreadId() ? null : eventValue.threadId();
+            TelegramSRV.telegramBot.sendMessage(text, eventValue.chatId(), threadId, null);
         }
     }
 
     @EventHandler(priority = EventPriority.MONITOR)
-    public void onChat(AsyncPlayerChatEvent event) {
-        if (!ConfigUtil.getEnabledOrNot(false)) return;
+    public void onChat(AsyncPlayerChatEvent event)
+    {
+        if (!ConfigUtil.getEnabledOrNot(false))
+        {
+            return;
+        }
         ConfigUtil.EventValue eventValue = ConfigUtil.getEventConfigValue(ConfigUtil.Events.PLAYER);
-        if (!eventValue.isEnabled() || eventValue.isNullChatId()) return;
+        if (!eventValue.enabled() || eventValue.isNullChatId())
+        {
+            return;
+        }
 
         Player player = event.getPlayer();
-        if (event.getMessage().startsWith("/")) return;
+        if (event.getMessage().startsWith("/"))
+        {
+            return;
+        }
         String message = event.getMessage().replaceAll("§.", "");
-        if (message.isEmpty()) return;
+        if (message.isEmpty())
+        {
+            return;
+        }
 
-        String text = ConfigUtil.getLocalizedText(ConfigUtil.Events.PLAYER, "sendMessage")
-                .replace("%playerName%", player.getName())
-                .replace("%message%", message);
+        String text = ConfigUtil.getLocalizedText(ConfigUtil.Events.PLAYER, "sendMessage").replace("%playerName%", player.getName()).replace("%message%", message);
         sendMessageToTelegram(text, eventValue);
     }
 
     @EventHandler(priority = EventPriority.MONITOR)
-    public void onDisconnect(PlayerQuitEvent event) {
-        if (!ConfigUtil.getEnabledOrNot(false)) return;
+    public void onDisconnect(PlayerQuitEvent event)
+    {
+        if (!ConfigUtil.getEnabledOrNot(false))
+        {
+            return;
+        }
         ConfigUtil.EventValue eventValue = ConfigUtil.getEventConfigValue(ConfigUtil.Events.PLAYER);
-        if (!eventValue.isEnabled() || eventValue.isNullChatId()) return;
+        if (!eventValue.enabled() || eventValue.isNullChatId())
+        {
+            return;
+        }
 
-        String text = ConfigUtil.getLocalizedText(ConfigUtil.Events.PLAYER, "leaveMessage")
-                .replace("%playerName%", event.getPlayer().getName());
+        String text = ConfigUtil.getLocalizedText(ConfigUtil.Events.PLAYER, "leaveMessage").replace("%playerName%", event.getPlayer().getName());
         sendMessageToTelegram(text, eventValue);
     }
 
     @EventHandler(priority = EventPriority.MONITOR)
-    public void onJoin(PlayerJoinEvent event) {
-        if (!ConfigUtil.getEnabledOrNot(false)) return;
+    public void onJoin(PlayerJoinEvent event)
+    {
+        if (!ConfigUtil.getEnabledOrNot(false))
+        {
+            return;
+        }
         ConfigUtil.EventValue eventValue = ConfigUtil.getEventConfigValue(ConfigUtil.Events.PLAYER);
-        if (!eventValue.isEnabled() || eventValue.isNullChatId()) return;
-        String text = ConfigUtil.getLocalizedText(ConfigUtil.Events.PLAYER, "joinMessage")
-                .replace("%playerName%", event.getPlayer().getName());
+        if (!eventValue.enabled() || eventValue.isNullChatId())
+        {
+            return;
+        }
+        String text = ConfigUtil.getLocalizedText(ConfigUtil.Events.PLAYER, "joinMessage").replace("%playerName%", event.getPlayer().getName());
         sendMessageToTelegram(text, eventValue);
     }
 
     @EventHandler(priority = EventPriority.MONITOR)
-    public void onAchievement(PlayerAdvancementDoneEvent event) {
-        if (!ConfigUtil.getEnabledOrNot(false)) return;
+    public void onAchievement(PlayerAdvancementDoneEvent event)
+    {
+        if (!ConfigUtil.getEnabledOrNot(false))
+        {
+            return;
+        }
         ConfigUtil.EventValue eventValue = ConfigUtil.getEventConfigValue(ConfigUtil.Events.PLAYER);
-        if (!eventValue.isEnabled() || eventValue.isNullChatId()) return;
+        if (!eventValue.enabled() || eventValue.isNullChatId())
+        {
+            return;
+        }
 
         String advancementKey = event.getAdvancement().getKey().getKey().replace("/", ".");
-        if (advancementKey.startsWith("recipes.") || Boolean.FALSE.equals(event.getPlayer().getWorld().getGameRuleValue(GameRule.ANNOUNCE_ADVANCEMENTS)))
+        if (advancementKey.startsWith("recipes.") || Boolean.FALSE.equals(event.getPlayer().getWorld().getGameRuleValue(GameRule.ANNOUNCE_ADVANCEMENTS)) || advancementKey.startsWith("killed_mob_check") || advancementKey.startsWith("death_trigger"))
+        {
             return;
-        String advancementText = TranslationRegistry.INSTANCE.translate("advancements." + advancementKey + ".title");
-        String text = ConfigUtil.getLocalizedText(ConfigUtil.Events.PLAYER, "advancementDone")
-                .replace("%playerName%", event.getPlayer().getName())
-                .replace("%advancementName%", advancementText);
-        sendMessageToTelegram(text, eventValue);
+        }
 
+        String advancementText = TranslationRegistry.INSTANCE.translate("advancements." + advancementKey + ".title");
+        String text = ConfigUtil.getLocalizedText(ConfigUtil.Events.PLAYER, "advancementDone").replace("%playerName%", event.getPlayer().getName()).replace("%advancementName%", advancementText);
+        sendMessageToTelegram(text, eventValue);
     }
 
     @EventHandler(priority = EventPriority.MONITOR)
-    public void onDeath(PlayerDeathEvent event) {
-        if (!ConfigUtil.getEnabledOrNot(false)) return;
+    public void onDeath(PlayerDeathEvent event)
+    {
+        if (!ConfigUtil.getEnabledOrNot(false))
+        {
+            return;
+        }
         ConfigUtil.EventValue eventValue = ConfigUtil.getEventConfigValue(ConfigUtil.Events.PLAYER);
-        if (!eventValue.isEnabled() || eventValue.isNullChatId()) return;
-        String text = ConfigUtil.getLocalizedText(ConfigUtil.Events.PLAYER, "death")
-                .replace("%playerName%", event.getPlayer().getName())
-                .replace("%deathMessage%", event.getDeathMessage());
+        if (!eventValue.enabled() || eventValue.isNullChatId())
+        {
+            return;
+        }
+        String text = ConfigUtil.getLocalizedText(ConfigUtil.Events.PLAYER, "death").replace("%playerName%", event.getPlayer().getName()).replace("%deathMessage%", event.getDeathMessage());
         sendMessageToTelegram(text, eventValue);
     }
 }

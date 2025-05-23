@@ -5,9 +5,10 @@ api-version: '1.21'
 
 commands:
   tglanguage:
-    description: Change language
-    usage: /tglanguage
+    description: "Change language for the bot. To see available languages, go to the lang folder. Enter the filename without .yml extension"
+    usage: "/tglanguage"
     permission: telegramSRV.admin
+    permission-message: "You do not have permission to use this command"
 
 permissions:
   telegramSRV.admin:
