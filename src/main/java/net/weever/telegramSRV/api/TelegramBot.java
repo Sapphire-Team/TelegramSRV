@@ -14,17 +14,14 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 import java.util.Arrays;
 
-public class TelegramBot extends TelegramLongPollingBot
-{
-    public TelegramBot()
-    {
+public class TelegramBot extends TelegramLongPollingBot {
+    public TelegramBot() {
         super(TelegramSRV.config().getString("BOT_TOKEN"));
         registerCommands();
         registerEvents();
     }
 
-    private void registerCommands()
-    {
+    private void registerCommands() {
         TelegramCommandImpl.addCommand("start", new StartTelegramCommand());
         TelegramCommandImpl.addCommand("info", new InfoTelegramCommand());
         TelegramCommandImpl.addCommand("language", new LanguageTelegramCommand());
@@ -33,23 +30,19 @@ public class TelegramBot extends TelegramLongPollingBot
         TelegramCommandImpl.addCommand("reload", new ReloadTelegramCommand());
     }
 
-    private void registerEvents()
-    {
+    private void registerEvents() {
         TelegramEventImpl.addEvent(new ChatEvent());
     }
 
     @Override
-    public void onUpdateReceived(Update update)
-    {
-        if (update.hasMessage() && update.getMessage().hasText() && update.getMessage().getText().startsWith("/"))
-        {
+    public void onUpdateReceived(Update update) {
+        if (update.hasMessage() && update.getMessage().hasText() && update.getMessage().getText().startsWith("/")) {
             processCommand(update);
         }
         TelegramEventImpl.getEvents().forEach(event -> event.onUpdateReceived(update));
     }
 
-    private void processCommand(Update update)
-    {
+    private void processCommand(Update update) {
         Message message = update.getMessage();
         long userId = message.getFrom().getId();
         String[] args = message.getText().split(" ");
@@ -57,21 +50,18 @@ public class TelegramBot extends TelegramLongPollingBot
 
         TelegramCommandImpl.getCommands().forEach((commandName, command) ->
         {
-            if ((commandText.equals(commandName) || commandText.startsWith(commandName)) && command.perform(commandName, userId))
-            {
+            if ((commandText.equals(commandName) || commandText.startsWith(commandName)) && command.perform(commandName, userId)) {
                 command.onCommand(new TelegramCommandImpl.ReplyToCommand(commandName, this, message, Arrays.copyOfRange(args, 1, args.length)));
             }
         });
     }
 
     @Override
-    public String getBotUsername()
-    {
+    public String getBotUsername() {
         return TelegramSRV.getPlugin(TelegramSRV.class).getConfig().getString("BOT_NAME");
     }
 
-    public void sendMessage(String text, String chatId, @Nullable String threadId, @Nullable Integer replyMessageId)
-    {
+    public void sendMessage(String text, String chatId, @Nullable String threadId, @Nullable Integer replyMessageId) {
         text = text.replace("\\n", "\n");
         SendMessage message = new SendMessage();
         message.setChatId(chatId);
@@ -80,26 +70,21 @@ public class TelegramBot extends TelegramLongPollingBot
         LinkPreviewOptions linkPreviewOptions = new LinkPreviewOptions();
         linkPreviewOptions.setIsDisabled(true);
         message.setLinkPreviewOptions(linkPreviewOptions);
-        if (threadId != null)
-        {
+        if (threadId != null) {
             message.setMessageThreadId(Long.valueOf(threadId).intValue());
         }
-        if (replyMessageId != null)
-        {
+        if (replyMessageId != null) {
             message.setReplyToMessageId(replyMessageId);
         }
 
-        try
-        {
+        try {
             execute(message);
-        } catch (TelegramApiException e)
-        {
+        } catch (TelegramApiException e) {
             e.printStackTrace();
         }
     }
 
-    public void replyMessage(String text, String chatId, Integer messageId)
-    {
+    public void replyMessage(String text, String chatId, Integer messageId) {
         sendMessage(text, chatId, null, messageId);
     }
 }
