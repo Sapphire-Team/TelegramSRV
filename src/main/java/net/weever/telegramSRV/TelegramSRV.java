@@ -62,7 +62,7 @@ public final class TelegramSRV extends JavaPlugin {
     private static void stopBotSession() {
         if (botSession != null) {
             try {
-                botSession.stop();
+                new Thread(TelegramSRV::stopBotSession).start();
             } catch (Exception e) {
                 logger.log(Level.SEVERE, "Failed to stop Telegram bot session: " + e.getMessage(), e);
             }
@@ -99,7 +99,7 @@ public final class TelegramSRV extends JavaPlugin {
         try {
             if (botSession != null && botSession.isRunning()) {
                 sendServerStatusMessage("stop");
-                botSession.stop();
+                stopBotSession();
             }
         } catch (Exception e) {
             logger.log(Level.SEVERE, "Failed to send \"Disable\" message: " + e.getMessage(), e);
