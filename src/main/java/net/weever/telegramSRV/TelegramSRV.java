@@ -1,8 +1,9 @@
 package net.weever.telegramSRV;
 
-import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents;
 import net.weever.telegramSRV.api.TelegramBot;
-import net.weever.telegramSRV.commands.LanguageCommand;
+import net.weever.telegramSRV.api.registrar.LegacyCommandRegistrar;
+import net.weever.telegramSRV.api.registrar.ModernCommandRegistrar;
+import net.weever.telegramSRV.api.registrar.base.ICommandRegistrar;
 import net.weever.telegramSRV.events.PlayerEvent;
 import net.weever.telegramSRV.util.ConfigUtil;
 import org.bukkit.Bukkit;
@@ -13,7 +14,6 @@ import org.telegram.telegrambots.meta.TelegramBotsApi;
 import org.telegram.telegrambots.meta.generics.BotSession;
 import org.telegram.telegrambots.updatesreceivers.DefaultBotSession;
 
-import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -22,6 +22,7 @@ public final class TelegramSRV extends JavaPlugin {
     public static Logger logger;
     private static BotSession botSession;
     private static Plugin plugin;
+    private ICommandRegistrar commandRegistrar;
 
     public static FileConfiguration config() {
         return plugin.getConfig();
@@ -69,10 +70,21 @@ public final class TelegramSRV extends JavaPlugin {
         }
     }
 
+    private void setupCommandRegistrar() {
+        try {
+            Class.forName("io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents");
+            this.commandRegistrar = new ModernCommandRegistrar();
+        } catch (ClassNotFoundException e) {
+            this.commandRegistrar = new LegacyCommandRegistrar();
+        }
+    }
+
     @Override
     public void onEnable() {
         plugin = this;
         logger = getLogger();
+        setupCommandRegistrar();
+
         try {
             saveDefaultConfig();
             ConfigUtil.copyDefaultTranslations();
@@ -83,13 +95,10 @@ public final class TelegramSRV extends JavaPlugin {
         }
         if (startTelegramBot()) {
             Bukkit.getPluginManager().registerEvents(new PlayerEvent(), this);
-            try {
-                this.getLifecycleManager().registerEventHandler(LifecycleEvents.COMMANDS, event -> event.registrar().register("tglanguage", new LanguageCommand()));
-                //                PluginCommand languageCommand = getCommand("tglanguage");
-                //                languageCommand.setTabCompleter(new LanguageTabCompletion());
-            } catch (NullPointerException e) {
-                logger.severe("Error with registering this command: " + e.getMessage());
-                Arrays.stream(e.getStackTrace()).forEach(line -> logger.severe(line.toString()));
+            if (commandRegistrar != null) {
+                commandRegistrar.registerCommands(this);
+            } else {
+                logger.severe("Could not initialize command registrar. Commands will not work.");
             }
         }
     }

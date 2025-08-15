@@ -8,7 +8,6 @@ group = 'net.weever'
 version = project.mc_version.toString() + "-" + project.version.toString()
 println version
 
-
 repositories {
     mavenCentral()
     maven {
@@ -27,12 +26,12 @@ dependencies {
     testCompileOnly 'org.projectlombok:lombok:1.18.34'
     testAnnotationProcessor 'org.projectlombok:lombok:1.18.34'
     implementation 'org.telegram:telegrambots:6.9.7.1'
-    compileOnly("io.papermc.paper:paper-api:1.21.4-R0.1-SNAPSHOT")
+    compileOnly("io.papermc.paper:paper-api:${mc_version}-R0.1-SNAPSHOT")
 }
 
 tasks {
     runServer {
-        minecraftVersion("1.21.4")
+        minecraftVersion(mc_version)
     }
 }
 
@@ -79,12 +78,54 @@ tasks.register("buildShadow") {
     }
 }
 
+tasks.register("runServer1_20_1", xyz.jpenilla.runpaper.task.RunServer) {
+    group = "run-paper"
+    description = "Runs a Paper server for Minecraft 1.20.1 for legacy testing"
+    minecraftVersion("1.20.1")
+    runDirectory.set(file("runs/1.20.1"))
+
+    dependsOn 'shadowJar'
+    pluginJars.from(tasks.shadowJar)
+
+    javaLauncher.set(javaToolchains.launcherFor {
+        languageVersion = JavaLanguageVersion.of(21)
+    })
+}
+
+tasks.register("runServer1_21_1", xyz.jpenilla.runpaper.task.RunServer) {
+    group = "run-paper"
+    description = "Runs a Paper server for Minecraft 1.21.1 for modern testing"
+    minecraftVersion("1.21.1")
+    runDirectory.set(file("runs/1.21.1"))
+
+    dependsOn 'shadowJar'
+    pluginJars.from(tasks.shadowJar)
+
+    javaLauncher.set(javaToolchains.launcherFor {
+        languageVersion = JavaLanguageVersion.of(21)
+    })
+}
+
+tasks.register("runServer1_21_4", xyz.jpenilla.runpaper.task.RunServer) {
+    group = "run-paper"
+    description = "Runs a Paper server for Minecraft 1.21.4 for modern testing"
+    minecraftVersion("1.21.4")
+    runDirectory.set(file("runs/1.21.4"))
+
+    dependsOn 'shadowJar'
+    pluginJars.from(tasks.shadowJar)
+
+    javaLauncher.set(javaToolchains.launcherFor {
+        languageVersion = JavaLanguageVersion.of(21)
+    })
+}
+
 processResources {
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     from('src/main/resources/lang') {
         include '**/*.yml'
     }
-    def props = [version: version]
+    def props = [version: version, api_version: api_version]
     inputs.properties props
     filteringCharset 'UTF-8'
     filesMatching('paper-plugin.yml') {
