@@ -5,7 +5,7 @@ plugins {
 }
 
 group = 'net.weever'
-version = project.mc_version.toString() + "-" + project.version.toString()
+version = project.version.toString()
 println version
 
 repositories {
@@ -61,7 +61,6 @@ tasks.withType(JavaCompile).configureEach {
 tasks {
     shadowJar {
         archiveBaseName.set("TelegramSRV")
-        archiveVersion.set(version.toString())
         archiveClassifier.set("")
     }
 }
