@@ -1,5 +1,8 @@
 package net.weever.telegramSRV.api.modules.events;
 
+import net.md_5.bungee.api.ChatColor;
+import net.md_5.bungee.api.chat.BaseComponent;
+import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.chat.hover.content.Text;
 import net.weever.telegramSRV.TelegramSRV;
@@ -42,32 +45,49 @@ public class ChatEvent implements ITelegramEvent {
 
         if (isConfiguredChat(chatId, threadId)) {
             String playerNick = formatUserName(message);
+            TextComponent finalComponent = new TextComponent();
 
-            TextComponent component = new TextComponent();
-            TextComponent telegramTag = new TextComponent(ConfigUtil.getLocalizedText("minecraft", "player.messagePrefix"));
-            TextComponent messageComponent = new TextComponent(" " + ConfigUtil.getLocalizedText("minecraft", "player.message").replace("%playerName%", playerNick).replace("%message%", text));
+            boolean prefixEnabled = TelegramSRV.config().getBoolean("text.minecraft.player.messageEnablePrefix", true);
+            String rawPrefix = ConfigUtil.getLocalizedText("minecraft", "player.messagePrefix");
 
-            if (message.getReplyToMessage() != null) {
-                if (TelegramSRV.config().getBoolean("text.minecraft.player.messageShowReplyInPrefix")) {
-                    Message replyMessage = message.getReplyToMessage();
-                    telegramTag.setHoverEvent(new net.md_5.bungee.api.chat.HoverEvent(net.md_5.bungee.api.chat.HoverEvent.Action.SHOW_TEXT, new Text(formatUserName(replyMessage) + ": " + replyMessage.getText())));
-                    if (TelegramSRV.config().getBoolean("text.minecraft.player.messageAddUnderlineIfHaveAReplyInPrefix")) {
-                        telegramTag.setUnderlined(true);
+            if (prefixEnabled && !rawPrefix.isEmpty()) {
+                String formattedPrefix = ChatColor.translateAlternateColorCodes('&', rawPrefix);
+                BaseComponent[] prefixComponents = TextComponent.fromLegacyText(formattedPrefix);
+
+                HoverEvent hoverEvent = null;
+                boolean underline = false;
+                if (message.getReplyToMessage() != null) {
+                    if (TelegramSRV.config().getBoolean("text.minecraft.player.messageShowReplyInPrefix")) {
+                        Message replyMessage = message.getReplyToMessage();
+                        hoverEvent = new HoverEvent(HoverEvent.Action.SHOW_TEXT, new Text(formatUserName(replyMessage) + ": " + replyMessage.getText()));
+                        if (TelegramSRV.config().getBoolean("text.minecraft.player.messageAddUnderlineIfHaveAReplyInPrefix")) {
+                            underline = true;
+                        }
                     }
+                }
+
+                for (BaseComponent part : prefixComponents) {
+                    if (hoverEvent != null) {
+                        part.setHoverEvent(hoverEvent);
+                    }
+                    if (underline) {
+                        part.setUnderlined(true);
+                    }
+                    finalComponent.addExtra(part);
                 }
             }
 
-            boolean prefixEnabledInMessage = TelegramSRV.config().getBoolean("text.minecraft.player.messageEnablePrefix", true);
-            boolean isPrefixEmpty = ConfigUtil.getLocalizedText("minecraft", "player.messagePrefix").isEmpty();
+            String messageFormat = " " + ConfigUtil.getLocalizedText("minecraft", "player.message");
+            String messageWithContent = messageFormat.replace("%playerName%", playerNick).replace("%message%", text);
+            String formattedMessage = ChatColor.translateAlternateColorCodes('&', messageWithContent);
+            BaseComponent[] messageComponents = TextComponent.fromLegacyText(formattedMessage);
 
-            if (prefixEnabledInMessage && !isPrefixEmpty) {
-                component.addExtra(telegramTag);
+            for(BaseComponent part : messageComponents) {
+                finalComponent.addExtra(part);
             }
 
-            component.addExtra(messageComponent);
-
             for (Player player : Bukkit.getOnlinePlayers()) {
-                player.spigot().sendMessage(component);
+                player.spigot().sendMessage(finalComponent);
             }
         }
     }

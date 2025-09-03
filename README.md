@@ -56,6 +56,8 @@ This Telegram bot is designed to simplify the management of your server (Minecra
 </details>
 
 ## 🛠️ Future Plans (TODO)
-*   [ ] **Console:** Implementation of a console in telegram chat.
-*   [ ] **Addon Support:** Adding support for plugins/addons.
-*   [ ] **DiscordSRV Integration:** Implementing support for DiscordSRV.
+*   [ ] **Image Support:** Adding support for images
+*   [ ] **Forward Support:** Adding support to forward to messages in game
+*   [ ] ~~**Console:** Implementation of a console in telegram chat.~~ It isn't necessary to do
+*   [ ] ~~**Addon Support:** Adding support for plugins/addons.~~ It isn't necessary to do
+*   [ ] ~~**DiscordSRV Integration:** Implementing support for DiscordSRV.~~ Just for what?
