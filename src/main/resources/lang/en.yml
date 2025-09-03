@@ -3,8 +3,17 @@ BOT_TOKEN: YOUR_BOT_TOKEN # Go to the @BotFather bot on Telegram and create your
 BOT_NAME: TelegramSRV # Replace with your own (optional). Default: TelegramSRV
 ADMINS: [] # Administrators. Example: ["123456789", "987654321"]. They have console access by default.
 
-fromMinecraftToTelegram: true # From Telegram to Minecraft
-fromTelegramToMinecraft: true # From Minecraft to Telegram
+# Message forwarding settings
+forwarding:
+  fromTelegramToMinecraft:
+    enabled: true # Master switch for forwarding from Telegram to Minecraft.
+    requirePrefix: false # If true, only messages starting with the prefix below will be forwarded.
+    prefix: "!" # The prefix to use if requirePrefix is true.
+
+  fromMinecraftToTelegram:
+    enabled: true # Master switch for forwarding from Minecraft to Telegram.
+    requirePrefix: false # If true, only messages starting with the prefix below will be forwarded.
+    prefix: "/tg" # The prefix/command to use if requirePrefix is true.
 
 # Send messages to the chat when the server starts or stops
 SERVER_STATUS: true

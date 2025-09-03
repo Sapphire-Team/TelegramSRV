@@ -3,21 +3,23 @@ package net.weever.telegramSRV.util;
 import lombok.Getter;
 import net.weever.telegramSRV.TelegramSRV;
 import org.bukkit.Bukkit;
-import org.jetbrains.annotations.NotNull;
+import org.bukkit.configuration.file.YamlConfiguration;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 
 import static net.weever.telegramSRV.TelegramSRV.config;
 
 public class ConfigUtil {
     @Getter
-    private static final Set<String> loadedLanguages = Set.of("en", "ru");
+    private static final Set<String> loadedLanguages = Set.of("en", "ru", "ua");
     private static final String langDirPath = "/lang";
     private static final String configFileName = "config.yml";
     private static final String oldConfigFileName = "config.old.yml";
@@ -78,7 +80,7 @@ public class ConfigUtil {
             try {
                 Files.copy(destFile.toPath(), backupFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
                 TelegramSRV.logger.info("Backup created: " + backupFile.getName());
-                updateConfigFileWithLanguage(language, destFile);
+                updateConfigFileWithLanguage(language, sourceFile, destFile);
                 TelegramSRV.plugin().reloadConfig();
                 TelegramSRV.logger.info("Language changed to: " + language.toUpperCase());
             } catch (IOException e) {
@@ -97,63 +99,33 @@ public class ConfigUtil {
         }
     }
 
-    private static void updateConfigFileWithLanguage(String language, File destFile) throws IOException {
+    private static void updateConfigFileWithLanguage(String language, File langFile, File destFile) throws IOException {
         var settingsMap = getSettingsMap();
-        var langFile = new File(ConfigUtil.langFile + "/" + language + langFileExtension);
-        var langLines = Files.readAllLines(langFile.toPath(), StandardCharsets.UTF_8);
-        Files.write(destFile.toPath(), langLines, StandardCharsets.UTF_8);
-
-        var configLines = Files.readAllLines(destFile.toPath(), StandardCharsets.UTF_8);
-        var updatedConfigLines = updateConfigLinesWithSettings(configLines, settingsMap);
-        Files.write(destFile.toPath(), updatedConfigLines, StandardCharsets.UTF_8);
-    }
-
-    private static List<String> updateConfigLinesWithSettings(List<String> configLines, Map<String, String> settingsMap) {
-        return configLines.stream().map(line ->
-        {
-            for (Map.Entry<String, String> entry : settingsMap.entrySet()) {
-                if (line.split(":")[0].equalsIgnoreCase(entry.getKey()) && !line.contains(entry.getValue())) {
-                    return entry.getKey() + ": " + entry.getValue();
-                }
-            }
-            return line;
-        }).toList();
-    }
-
-    private static @NotNull LinkedHashMap<String, String> getStringMap(Map<String, String> settingsMap, List<String> langLines) {
-        var langMap = new LinkedHashMap<String, String>();
-        for (var line : langLines) {
-            var trimmed = line.trim();
-            if (!trimmed.isEmpty() && !trimmed.startsWith("#")) {
-                var parts = trimmed.split(":", 2);
-                if (parts.length == 2) {
-                    langMap.put(parts[0].trim(), parts[1].trim());
-                }
-            }
+        YamlConfiguration newConfig = YamlConfiguration.loadConfiguration(langFile);
+        for (Map.Entry<String, Object> entry : settingsMap.entrySet()) {
+            newConfig.set(entry.getKey(), entry.getValue());
         }
-
-        for (var entry : settingsMap.entrySet()) { // for example it's getting all from old one
-            var key = entry.getKey();
-            var value = entry.getValue();
-            if (value != null) {
-                langMap.put(key, value);
-            }
-        }
-        return langMap;
+        newConfig.save(destFile);
     }
 
-    private static Map<String, String> getSettingsMap() {
-        var map = new HashMap<String, String>();
-        String[] keys = {"BOT_TOKEN", "BOT_NAME", "ADMINS", "fromMinecraftToTelegram", "fromTelegramToMinecraft", "SERVER_STATUS", "SERVER_STATUS_CHAT_ID", "SERVER_STATUS_THREAD_ID", "PLAYER_STATUS", "PLAYER_STATUS_CHAT_ID", "PLAYER_STATUS_THREAD_ID"};
+    private static Map<String, Object> getSettingsMap() {
+        var map = new HashMap<String, Object>();
+        String[] keys = {
+                "BOT_TOKEN", "BOT_NAME", "ADMINS",
+                "forwarding.fromTelegramToMinecraft.enabled", "forwarding.fromTelegramToMinecraft.requirePrefix", "forwarding.fromTelegramToMinecraft.prefix",
+                "forwarding.fromMinecraftToTelegram.enabled", "forwarding.fromMinecraftToTelegram.requirePrefix", "forwarding.fromMinecraftToTelegram.prefix",
+                "SERVER_STATUS", "SERVER_STATUS_CHAT_ID", "SERVER_STATUS_THREAD_ID",
+                "PLAYER_STATUS", "PLAYER_STATUS_CHAT_ID", "PLAYER_STATUS_THREAD_ID"
+        };
 
         try {
             for (var key : keys) {
-                var value = config().getString(key);
+                var value = config().get(key);
                 if (value != null) {
                     map.put(key, value);
                 }
             }
-        } catch (NullPointerException e) {
+        } catch (Exception e) {
             TelegramSRV.logger.severe("Error getting settings map: " + e.getMessage());
             return Collections.emptyMap();
         }
@@ -176,8 +148,20 @@ public class ConfigUtil {
         return new EventValue(status, chatId, threadId);
     }
 
-    public static boolean getEnabledOrNot(boolean aboutFromTelegramToMinecraft) {
-        return aboutFromTelegramToMinecraft ? config().getBoolean("fromTelegramToMinecraft") : config().getBoolean("fromMinecraftToTelegram");
+    private static String getForwardingPath(boolean fromTelegramToMinecraft) {
+        return fromTelegramToMinecraft ? "forwarding.fromTelegramToMinecraft" : "forwarding.fromMinecraftToTelegram";
+    }
+
+    public static boolean isForwardingEnabled(boolean fromTelegramToMinecraft) {
+        return config().getBoolean(getForwardingPath(fromTelegramToMinecraft) + ".enabled", true);
+    }
+
+    public static boolean isPrefixRequired(boolean fromTelegramToMinecraft) {
+        return config().getBoolean(getForwardingPath(fromTelegramToMinecraft) + ".requirePrefix", false);
+    }
+
+    public static String getPrefix(boolean fromTelegramToMinecraft) {
+        return config().getString(getForwardingPath(fromTelegramToMinecraft) + ".prefix", fromTelegramToMinecraft ? "!" : "/tg");
     }
 
     public static String getLocalizedText(String name, String key) {

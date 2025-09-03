@@ -22,34 +22,50 @@ public class PlayerEvent implements Listener {
         }
     }
 
-    @EventHandler(priority = EventPriority.MONITOR)
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onChat(AsyncPlayerChatEvent event) {
-        if (!ConfigUtil.getEnabledOrNot(false)) {
+        if (!ConfigUtil.isForwardingEnabled(false)) {
             return;
         }
+
         ConfigUtil.EventValue eventValue = ConfigUtil.getEventConfigValue(ConfigUtil.Events.PLAYER);
         if (!eventValue.enabled() || eventValue.isNullChatId()) {
             return;
         }
 
         Player player = event.getPlayer();
-        if (event.getMessage().startsWith("/")) {
-            return;
-        }
-        String message = event.getMessage().replaceAll("§.", "");
-        if (message.isEmpty()) {
-            return;
-        }
+        String message = event.getMessage();
 
-        String text = ConfigUtil.getLocalizedText(ConfigUtil.Events.PLAYER, "sendMessage").replace("%playerName%", player.getName()).replace("%message%", message);
-        sendMessageToTelegram(text, eventValue);
+        if (ConfigUtil.isPrefixRequired(false)) {
+            String prefix = ConfigUtil.getPrefix(false);
+            if (message.startsWith(prefix)) {
+                String messageToSend = message.substring(prefix.length()).trim();
+                if (!messageToSend.isEmpty()) {
+                    String text = ConfigUtil.getLocalizedText(ConfigUtil.Events.PLAYER, "sendMessage")
+                            .replace("%playerName%", player.getName())
+                            .replace("%message%", messageToSend.replaceAll("§.", ""));
+                    sendMessageToTelegram(text, eventValue);
+                }
+            }
+        } else {
+            if (message.startsWith("/")) {
+                return;
+            }
+
+            String cleanedMessage = message.replaceAll("§.", "");
+            if (cleanedMessage.isEmpty()) {
+                return;
+            }
+
+            String text = ConfigUtil.getLocalizedText(ConfigUtil.Events.PLAYER, "sendMessage")
+                    .replace("%playerName%", player.getName())
+                    .replace("%message%", cleanedMessage);
+            sendMessageToTelegram(text, eventValue);
+        }
     }
 
     @EventHandler(priority = EventPriority.MONITOR)
     public void onDisconnect(PlayerQuitEvent event) {
-        if (!ConfigUtil.getEnabledOrNot(false)) {
-            return;
-        }
         ConfigUtil.EventValue eventValue = ConfigUtil.getEventConfigValue(ConfigUtil.Events.PLAYER);
         if (!eventValue.enabled() || eventValue.isNullChatId()) {
             return;
@@ -61,9 +77,6 @@ public class PlayerEvent implements Listener {
 
     @EventHandler(priority = EventPriority.MONITOR)
     public void onJoin(PlayerJoinEvent event) {
-        if (!ConfigUtil.getEnabledOrNot(false)) {
-            return;
-        }
         ConfigUtil.EventValue eventValue = ConfigUtil.getEventConfigValue(ConfigUtil.Events.PLAYER);
         if (!eventValue.enabled() || eventValue.isNullChatId()) {
             return;
@@ -74,9 +87,6 @@ public class PlayerEvent implements Listener {
 
     @EventHandler(priority = EventPriority.MONITOR)
     public void onAchievement(PlayerAdvancementDoneEvent event) {
-        if (!ConfigUtil.getEnabledOrNot(false)) {
-            return;
-        }
         ConfigUtil.EventValue eventValue = ConfigUtil.getEventConfigValue(ConfigUtil.Events.PLAYER);
         if (!eventValue.enabled() || eventValue.isNullChatId()) {
             return;
@@ -95,9 +105,6 @@ public class PlayerEvent implements Listener {
 
     @EventHandler(priority = EventPriority.MONITOR)
     public void onDeath(PlayerDeathEvent event) {
-        if (!ConfigUtil.getEnabledOrNot(false)) {
-            return;
-        }
         ConfigUtil.EventValue eventValue = ConfigUtil.getEventConfigValue(ConfigUtil.Events.PLAYER);
         if (!eventValue.enabled() || eventValue.isNullChatId()) {
             return;

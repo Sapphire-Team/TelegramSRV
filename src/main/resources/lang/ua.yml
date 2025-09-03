@@ -3,8 +3,17 @@ BOT_TOKEN: YOUR_BOT_TOKEN # Зайдіть у телеграм-бота @BotFath
 BOT_NAME: TelegramSRV # Змініть на своє (якщо хочете). За замовчуванням: TelegramSRV
 ADMINS: [] # Адміністратори. Приклад: ["123456789", "987654321"]. За замовчуванням у них вже є доступ до консолі
 
-fromMinecraftToTelegram: true # З Телеграма до Майнкрафту
-fromTelegramToMinecraft: true # З Майнкрафту до Телеграма
+# Налаштування пересилання повідомлень
+forwarding:
+  fromTelegramToMinecraft:
+    enabled: true # Головний перемикач для пересилання з Telegram до Minecraft.
+    requirePrefix: false # Якщо true, будуть пересилатися тільки повідомлення, що починаються з префікса нижче.
+    prefix: "!" # Префікс, який буде використовуватися, якщо requirePrefix дорівнює true.
+
+  fromMinecraftToTelegram:
+    enabled: true # Головний перемикач для пересилання з Minecraft до Telegram.
+    requirePrefix: false # Якщо true, будуть пересилатися тільки повідомлення, що починаються з префікса нижче.
+    prefix: "/tg" # Префікс/команда, яка буде використовуватися, якщо requirePrefix дорівнює true.
 
 # Надсилати повідомлення в чат, коли сервер запускається або вимикається
 SERVER_STATUS: true
