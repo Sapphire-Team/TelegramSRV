@@ -67,7 +67,7 @@ tasks {
 }
 
 tasks.register("buildShadow") {
-    group = "build"
+    group = "telegram-srv"
     description = "Cleans the project and builds the shadow JAR."
 
     dependsOn clean
@@ -79,7 +79,7 @@ tasks.register("buildShadow") {
 }
 
 tasks.register("runServer1_20_1", xyz.jpenilla.runpaper.task.RunServer) {
-    group = "run-paper"
+    group = "telegram-srv"
     description = "Runs a Paper server for Minecraft 1.20.1 for legacy testing"
     minecraftVersion("1.20.1")
     runDirectory.set(file("runs/1.20.1"))
@@ -93,7 +93,7 @@ tasks.register("runServer1_20_1", xyz.jpenilla.runpaper.task.RunServer) {
 }
 
 tasks.register("runServer1_21_1", xyz.jpenilla.runpaper.task.RunServer) {
-    group = "run-paper"
+    group = "telegram-srv"
     description = "Runs a Paper server for Minecraft 1.21.1 for modern testing"
     minecraftVersion("1.21.1")
     runDirectory.set(file("runs/1.21.1"))
@@ -107,7 +107,7 @@ tasks.register("runServer1_21_1", xyz.jpenilla.runpaper.task.RunServer) {
 }
 
 tasks.register("runServer1_21_4", xyz.jpenilla.runpaper.task.RunServer) {
-    group = "run-paper"
+    group = "telegram-srv"
     description = "Runs a Paper server for Minecraft 1.21.4 for modern testing"
     minecraftVersion("1.21.4")
     runDirectory.set(file("runs/1.21.4"))
