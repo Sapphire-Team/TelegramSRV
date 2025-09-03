@@ -1,9 +1,8 @@
 package net.weever.telegramSRV.events;
 
-import net.md_5.bungee.chat.TranslationRegistry;
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import net.weever.telegramSRV.TelegramSRV;
 import net.weever.telegramSRV.util.ConfigUtil;
-import org.bukkit.GameRule;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -88,17 +87,11 @@ public class PlayerEvent implements Listener {
     @EventHandler(priority = EventPriority.MONITOR)
     public void onAchievement(PlayerAdvancementDoneEvent event) {
         ConfigUtil.EventValue eventValue = ConfigUtil.getEventConfigValue(ConfigUtil.Events.PLAYER);
-        if (!eventValue.enabled() || eventValue.isNullChatId()) {
+        if (!eventValue.enabled() || eventValue.isNullChatId() || event.getAdvancement().getDisplay() == null) {
             return;
         }
 
-        String advancementKey = event.getAdvancement().getKey().getKey().replace("/", ".");
-        if (advancementKey.startsWith("recipes.") || Boolean.FALSE.equals(event.getPlayer().getWorld().getGameRuleValue(GameRule.ANNOUNCE_ADVANCEMENTS)) || advancementKey.startsWith("killed_mob_check") || advancementKey.startsWith("death_trigger")) {
-            return;
-        }
-
-        String advancementText = TranslationRegistry.INSTANCE.translate("advancements." + advancementKey + ".title");
-
+        String advancementText = PlainTextComponentSerializer.plainText().serialize(event.getAdvancement().displayName()).replace("[", "").replace("]", "");
         String text = ConfigUtil.getLocalizedText(ConfigUtil.Events.PLAYER, "advancementDone").replace("%playerName%", event.getPlayer().getName()).replace("%advancementName%", advancementText);
         sendMessageToTelegram(text, eventValue);
     }
