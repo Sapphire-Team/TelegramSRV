@@ -15,6 +15,10 @@ import org.bukkit.event.player.PlayerQuitEvent;
 
 public class PlayerEvent implements Listener {
     private static void sendMessageToTelegram(String text, ConfigUtil.EventValue eventValue) {
+        if (text == null) {
+            return;
+        }
+
         if (eventValue.enabled() && !eventValue.isNullChatId()) {
             String threadId = eventValue.isNullThreadId() ? null : eventValue.threadId();
             TelegramSRV.telegramBot.sendMessage(text, eventValue.chatId(), threadId, null);
