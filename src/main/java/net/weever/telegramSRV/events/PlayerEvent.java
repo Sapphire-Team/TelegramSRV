@@ -15,7 +15,7 @@ import org.bukkit.event.player.PlayerQuitEvent;
 
 public class PlayerEvent implements Listener {
     private static void sendMessageToTelegram(String text, ConfigUtil.EventValue eventValue) {
-        if (text == null) {
+        if (text == null || text.isEmpty()) {
             return;
         }
 
