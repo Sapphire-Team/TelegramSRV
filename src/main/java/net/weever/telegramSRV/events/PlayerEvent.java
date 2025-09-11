@@ -1,5 +1,7 @@
 package net.weever.telegramSRV.events;
 
+import io.papermc.paper.event.player.AsyncChatEvent;
+import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import net.weever.telegramSRV.TelegramSRV;
 import net.weever.telegramSRV.util.ConfigUtil;
@@ -26,7 +28,7 @@ public class PlayerEvent implements Listener {
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-    public void onChat(AsyncPlayerChatEvent event) {
+    public void onChat(AsyncChatEvent event) {
         if (!ConfigUtil.isForwardingEnabled(false)) {
             return;
         }
@@ -37,34 +39,39 @@ public class PlayerEvent implements Listener {
         }
 
         Player player = event.getPlayer();
-        String message = event.getMessage();
+        TextComponent message = ((TextComponent) event.originalMessage());
+        String cleanMessage = removeStyles(message.content());
 
         if (ConfigUtil.isPrefixRequired(false)) {
             String prefix = ConfigUtil.getPrefix(false);
-            if (message.startsWith(prefix)) {
-                String messageToSend = message.substring(prefix.length()).trim();
+            if (cleanMessage.startsWith(prefix)) {
+                String messageToSend = cleanMessage.substring(prefix.length())
+                                                     .trim();
                 if (!messageToSend.isEmpty()) {
                     String text = ConfigUtil.getLocalizedText(ConfigUtil.Events.PLAYER, "sendMessage")
-                            .replace("%playerName%", player.getName())
-                            .replace("%message%", messageToSend.replaceAll("§.", ""));
+                                            .replace("%playerName%", player.getName())
+                                            .replace("%message%", cleanMessage);
                     sendMessageToTelegram(text, eventValue);
                 }
             }
         } else {
-            if (message.startsWith("/")) {
+            if (cleanMessage.startsWith("/")) {
                 return;
             }
 
-            String cleanedMessage = message.replaceAll("§.", "");
-            if (cleanedMessage.isEmpty()) {
+            if (cleanMessage.isEmpty()) {
                 return;
             }
 
             String text = ConfigUtil.getLocalizedText(ConfigUtil.Events.PLAYER, "sendMessage")
-                    .replace("%playerName%", player.getName())
-                    .replace("%message%", cleanedMessage);
+                                    .replace("%playerName%", player.getName())
+                                    .replace("%message%", cleanMessage);
             sendMessageToTelegram(text, eventValue);
         }
+    }
+
+    private String removeStyles(String text) {
+        return text.replaceAll("[§&].", "");
     }
 
     @EventHandler(priority = EventPriority.MONITOR)
