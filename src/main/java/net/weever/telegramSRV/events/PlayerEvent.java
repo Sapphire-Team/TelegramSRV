@@ -10,7 +10,6 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.PlayerDeathEvent;
-import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerAdvancementDoneEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
@@ -40,32 +39,32 @@ public class PlayerEvent implements Listener {
 
         Player player = event.getPlayer();
         TextComponent message = ((TextComponent) event.originalMessage());
-        String cleanMessage = removeStyles(message.content());
+        String rawMessage = removeStyles(message.content());
 
         if (ConfigUtil.isPrefixRequired(false)) {
             String prefix = ConfigUtil.getPrefix(false);
-            if (cleanMessage.startsWith(prefix)) {
-                String messageToSend = cleanMessage.substring(prefix.length())
+            if (rawMessage.startsWith(prefix)) {
+                String messageWithoutPrefix = rawMessage.substring(prefix.length())
                                                      .trim();
-                if (!messageToSend.isEmpty()) {
+                if (!messageWithoutPrefix.isEmpty()) {
                     String text = ConfigUtil.getLocalizedText(ConfigUtil.Events.PLAYER, "sendMessage")
                                             .replace("%playerName%", player.getName())
-                                            .replace("%message%", cleanMessage);
+                                            .replace("%message%", messageWithoutPrefix);
                     sendMessageToTelegram(text, eventValue);
                 }
             }
         } else {
-            if (cleanMessage.startsWith("/")) {
+            if (rawMessage.startsWith("/")) {
                 return;
             }
 
-            if (cleanMessage.isEmpty()) {
+            if (rawMessage.isEmpty()) {
                 return;
             }
 
             String text = ConfigUtil.getLocalizedText(ConfigUtil.Events.PLAYER, "sendMessage")
                                     .replace("%playerName%", player.getName())
-                                    .replace("%message%", cleanMessage);
+                                    .replace("%message%", rawMessage);
             sendMessageToTelegram(text, eventValue);
         }
     }
