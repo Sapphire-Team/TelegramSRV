@@ -109,10 +109,14 @@ public class PlayerEvent implements Listener {
     @EventHandler(priority = EventPriority.MONITOR)
     public void onDeath(PlayerDeathEvent event) {
         ConfigUtil.EventValue eventValue = ConfigUtil.getEventConfigValue(ConfigUtil.Events.PLAYER);
-        if (!eventValue.enabled() || eventValue.isNullChatId()) {
+
+        boolean ignored = !eventValue.enabled() || eventValue.isNullChatId() || event.deathMessage() == null;
+        if (ignored) {
             return;
         }
-        String text = ConfigUtil.getLocalizedText(ConfigUtil.Events.PLAYER, "death").replace("%playerName%", event.getPlayer().getName()).replace("%deathMessage%", event.getDeathMessage());
+
+        var message = ((TextComponent) event.deathMessage()).content();
+        String text = ConfigUtil.getLocalizedText(ConfigUtil.Events.PLAYER, "death").replace("%playerName%", event.getPlayer().getName()).replace("%deathMessage%", message);
         sendMessageToTelegram(text, eventValue);
     }
 }
