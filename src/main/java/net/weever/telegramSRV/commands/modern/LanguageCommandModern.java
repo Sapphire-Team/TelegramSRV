@@ -1,3 +1,4 @@
+//? if modern_commands {
 package net.weever.telegramSRV.commands.modern;
 
 import io.papermc.paper.command.brigadier.BasicCommand;
@@ -31,3 +32,4 @@ public class LanguageCommandModern implements BasicCommand {
         return "telegramSRV.admin";
     }
 }
+//?}

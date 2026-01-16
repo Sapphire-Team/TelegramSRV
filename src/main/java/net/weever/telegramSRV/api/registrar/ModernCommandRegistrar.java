@@ -1,3 +1,4 @@
+//? if modern_commands {
 package net.weever.telegramSRV.api.registrar;
 
 import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents;
@@ -20,3 +21,4 @@ public class ModernCommandRegistrar implements ICommandRegistrar {
         }
     }
 }
+//?}

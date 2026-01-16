@@ -1,8 +1,12 @@
 package net.weever.telegramSRV.events;
 
+//? if modern_chat_event {
 import io.papermc.paper.event.player.AsyncChatEvent;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
+//?} else {
+/*import org.bukkit.event.player.AsyncPlayerChatEvent;*/
+//?}
 import net.weever.telegramSRV.TelegramSRV;
 import net.weever.telegramSRV.util.ConfigUtil;
 import org.bukkit.entity.Player;
@@ -27,7 +31,11 @@ public class PlayerEvent implements Listener {
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    //? if modern_chat_event {
     public void onChat(AsyncChatEvent event) {
+    //?} else {
+    /*public void onChat(AsyncPlayerChatEvent event) {*/
+    //?}
         if (!ConfigUtil.isForwardingEnabled(false)) {
             return;
         }
@@ -38,8 +46,14 @@ public class PlayerEvent implements Listener {
         }
 
         Player player = event.getPlayer();
+        String rawMessage;
+
+        //? if modern_chat_event {
         TextComponent message = ((TextComponent) event.originalMessage());
-        String rawMessage = removeStyles(message.content());
+        rawMessage = removeStyles(message.content());
+        //?} else {
+        /*rawMessage = removeStyles(event.getMessage());*/
+        //?}
 
         if (ConfigUtil.isPrefixRequired(false)) {
             String prefix = ConfigUtil.getPrefix(false);
@@ -101,7 +115,15 @@ public class PlayerEvent implements Listener {
             return;
         }
 
-        String advancementText = PlainTextComponentSerializer.plainText().serialize(event.getAdvancement().displayName()).replace("[", "").replace("]", "");
+        String advancementText;
+
+        //? if modern_chat_event {
+        advancementText = PlainTextComponentSerializer.plainText().serialize(event.getAdvancement().displayName()).replace("[", "").replace("]", "");
+        //?} else {
+        // advancementText = event.getAdvancement().getKey().getKey();
+        //?}
+
+        if (advancementText.isEmpty()) return;
         String text = ConfigUtil.getLocalizedText(ConfigUtil.Events.PLAYER, "advancementDone").replace("%playerName%", event.getPlayer().getName()).replace("%advancementName%", advancementText);
         sendMessageToTelegram(text, eventValue);
     }
@@ -115,7 +137,12 @@ public class PlayerEvent implements Listener {
             return;
         }
 
-        var message = ((TextComponent) event.deathMessage()).content();
+        String message;
+        //? if modern_chat_event {
+        message = ((TextComponent) event.deathMessage()).content();
+        //?} else {
+        /*message = event.getDeathMessage();*/
+        //?}
         String text = ConfigUtil.getLocalizedText(ConfigUtil.Events.PLAYER, "death").replace("%playerName%", event.getPlayer().getName()).replace("%deathMessage%", message);
         sendMessageToTelegram(text, eventValue);
     }

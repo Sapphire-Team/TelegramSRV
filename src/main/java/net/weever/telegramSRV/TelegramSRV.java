@@ -1,8 +1,10 @@
 package net.weever.telegramSRV;
 
 import net.weever.telegramSRV.api.TelegramBot;
-import net.weever.telegramSRV.api.registrar.LegacyCommandRegistrar;
+//? if modern_commands
 import net.weever.telegramSRV.api.registrar.ModernCommandRegistrar;
+//? if !modern_commands
+/*import net.weever.telegramSRV.api.registrar.LegacyCommandRegistrar;*/
 import net.weever.telegramSRV.api.registrar.base.ICommandRegistrar;
 import net.weever.telegramSRV.events.PlayerEvent;
 import net.weever.telegramSRV.util.ConfigUtil;
@@ -71,12 +73,11 @@ public final class TelegramSRV extends JavaPlugin {
     }
 
     private void setupCommandRegistrar() {
-        try {
-            Class.forName("io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents");
-            this.commandRegistrar = new ModernCommandRegistrar();
-        } catch (ClassNotFoundException e) {
-            this.commandRegistrar = new LegacyCommandRegistrar();
-        }
+        //? if modern_commands {
+        this.commandRegistrar = new ModernCommandRegistrar();
+        //?} else {
+        /*this.commandRegistrar = new LegacyCommandRegistrar();*/
+        //?}
     }
 
     @Override
