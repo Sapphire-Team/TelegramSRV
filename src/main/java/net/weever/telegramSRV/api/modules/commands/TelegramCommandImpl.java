@@ -1,6 +1,8 @@
 package net.weever.telegramSRV.api.modules.commands;
 
 import lombok.Getter;
+import lombok.Value;
+import lombok.experimental.Accessors;
 import net.weever.telegramSRV.api.TelegramBot;
 import net.weever.telegramSRV.api.modules.ITelegramCommand;
 import org.telegram.telegrambots.meta.api.objects.Message;
@@ -20,7 +22,13 @@ public class TelegramCommandImpl implements ITelegramCommand {
         commands.remove(commandName);
     }
 
-    public record ReplyToCommand(String commandName, TelegramBot bot, Message message, String[] args) {
+    @Value
+    @Accessors(fluent = true)
+    public static class ReplyToCommand {
+        String commandName;
+        TelegramBot bot;
+        Message message;
+        String[] args;
 
         public void send(String text) {
             bot.sendMessage(text, message.getChatId().toString(), null, null);

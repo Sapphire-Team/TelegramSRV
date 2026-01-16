@@ -76,8 +76,8 @@ public final class TelegramSRV extends JavaPlugin {
         //? if modern_commands {
         this.commandRegistrar = new ModernCommandRegistrar();
         //?} else {
-        /*this.commandRegistrar = new LegacyCommandRegistrar();*/
-        //?}
+        /*this.commandRegistrar = new LegacyCommandRegistrar();
+        *///?}
     }
 
     @Override

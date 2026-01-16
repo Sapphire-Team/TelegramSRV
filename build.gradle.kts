@@ -55,16 +55,30 @@ tasks {
     }
 
     processResources {
+        val apiVersion = when {
+            stonecutter.eval(stonecutter.current.version, ">=1.21") -> "1.21"
+            stonecutter.eval(stonecutter.current.version, ">=1.20") -> "1.20"
+            stonecutter.eval(stonecutter.current.version, ">=1.19") -> "1.19"
+            stonecutter.eval(stonecutter.current.version, ">=1.18") -> "1.18"
+            stonecutter.eval(stonecutter.current.version, ">=1.17") -> "1.17"
+            else -> "1.16"
+        }
+
         val props = mapOf(
             "version" to project.version,
-            "api_version" to if (stonecutter.eval(stonecutter.current.version, ">=1.20")) "1.20" else "1.16"
+            "api_version" to apiVersion
         )
+
         inputs.properties(props)
         filesMatching("plugin.yml") {
             expand(props)
         }
         filesMatching("paper-plugin.yml") {
             expand(props)
+        }
+
+        if (stonecutter.eval(stonecutter.current.version, "<1.19")) {
+            exclude("paper-plugin.yml")
         }
     }
 }

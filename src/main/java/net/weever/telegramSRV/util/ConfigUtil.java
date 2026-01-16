@@ -1,6 +1,8 @@
 package net.weever.telegramSRV.util;
 
 import lombok.Getter;
+import lombok.Value;
+import lombok.experimental.Accessors;
 import net.weever.telegramSRV.TelegramSRV;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -177,7 +179,13 @@ public class ConfigUtil {
         PLAYER, SERVER, CONSOLE
     }
 
-    public record EventValue(boolean enabled, String chatId, String threadId) {
+    @Value
+    @Accessors(fluent = true)
+    public static class EventValue {
+        boolean enabled;
+        String chatId;
+        String threadId;
+
         public boolean isNullThreadId() {
             return threadId == null || threadId.isEmpty() || threadId.equals("YOUR_THREAD_ID");
         }
